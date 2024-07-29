@@ -4,11 +4,11 @@ from numpy import pi
 
 # Initial Variable
 # Bits is the number of bits for the input numbers
-bits = 5
+bits = 3
 
 # Two numbers to be added, length must equal bits
-bit1 = "00011"
-bit2 = "00010"
+bit1 = "011"
+bit2 = "111"
 
 # Sets up environment
 qreg_q = QuantumRegister(bits*3, 'q')
@@ -32,11 +32,11 @@ if bit2[-1] == "1":
     circuit.x(qreg_q[d2])
 
 # Code for half adder
-circuit.ccx(qreg_q[d1], qreg_q[d2], qreg_q[2])
+circuit.ccx(qreg_q[d1], qreg_q[d2], qreg_q[cOut])
+circuit.cx(qreg_q[cOut], qreg_q[d2])
 circuit.x(qreg_q[cOut])
-circuit.ccx(qreg_q[d1], qreg_q[cOut], qreg_q[d2])
+circuit.ccx(qreg_q[d1], qreg_q[2], qreg_q[d2])
 circuit.x(qreg_q[cOut])
-circuit.ccx(qreg_q[d1], qreg_q[cOut], qreg_q[d2])
 
 # Measures the sum bit
 circuit.measure(qreg_q[d2], creg_c[d1])
@@ -67,6 +67,7 @@ for i in range(bits-1):
     circuit.ccx(qreg_q[d2], qreg_q[s], qreg_q[cOut])
     circuit.cx(qreg_q[d2], qreg_q[s])
     circuit.cx(qreg_q[d1], qreg_q[d2])
+
     circuit.measure(qreg_q[3*i-1], creg_c[i])
 
 # Adds final measure for the carry bit of the last adder
@@ -89,3 +90,36 @@ counts = result.get_counts(circ)
 print(f"Bit 1: {bit1}\nBit 2: {bit2}\nSum: {list(counts.keys())[0]}")
 # plot_histogram(counts)
 # matplotlib.pyplot.show()
+
+
+"""
+OPENQASM 2.0;
+include "qelib1.inc";
+
+qreg q[2];
+creg c[2];
+
+h q[0];
+h q[1];
+cx q[0], q[1];
+x q[0];
+cz q[1], q[0];
+x q[0];
+cx q[0], q[1];
+
+h q[0];
+h q[1];
+x q[0];
+x q[1];
+cz q[0], q[1];
+x q[0];
+x q[1];
+h q[0];
+h q[1];
+
+measure q[0] -> c[0];
+measure q[1] -> c[1];
+
+// @columns [0,0,2,3,4,5,6,14,15]
+
+"""
